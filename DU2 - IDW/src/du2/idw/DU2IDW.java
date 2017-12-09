@@ -39,19 +39,27 @@ public class DU2IDW {
                 String [] items;
                 items = line.split(",");                
                 if (coord == 0){
-                    lineCount = parseInt(items[0]);
+                    lineCount = parseInt(line);
                     coord++;                    
                 }                    
                 else if (coord == 1){                    
-                    x0 = toDouble(items, lineCount);                    
+                    x0 = toDouble(items);                    
                     coord++;
                 }
                 else if (coord == 2){                    
-                    y0 = toDouble(items, lineCount);
+                    y0 = toDouble(items);
                     coord++;
                 }
-                else                   
-                    z0 = toDouble(items, lineCount);                
+                else if (coord == 3){                   
+                    z0 = toDouble(items);
+                    coord++;
+                }
+                else{
+                    System.err.print("Wrong data format. First line has to be"
+                            + " data count (one number), second line x, third line y,"
+                            + " fourth line z.");
+                    System.exit(1);
+                }
             }
         
             
@@ -63,9 +71,16 @@ public class DU2IDW {
             System.exit(1);
         }
         catch (NumberFormatException ex){
-            System.err.print("Wrong data format, line count has to be an integer.");
+            System.err.print("Wrong data format, line count has to be one integer.");
             System.exit(1);
-        }        
+        }
+        if (x0.length != y0.length || x0.length != z0.length){
+            System.err.print("Different count of coordinates. There has to be same"
+                    + " amount of x as y and z coordinates. Second line for x, "
+                    + "third line for y and fourth line for z.");
+            System.exit(1);
+        }
+        
         
         double []z = IDW(x0,y0,z0,lineCount);
         PrintWriter writer;
@@ -87,11 +102,11 @@ public class DU2IDW {
         }
     }
     
-    public static double [] toDouble(String []items, int lines){                    
+    public static double [] toDouble(String []items){                    
         double []line;
-        line = new double [lines];
+        line = new double [items.length];
         try {
-            for (int i = 0; i < lines; i++)
+            for (int i = 0; i < items.length; i++)
             {
                 line[i] = parseDouble(items[i]);
             }            
@@ -118,7 +133,7 @@ public class DU2IDW {
             y[i] = y[i-1] + yStep;
         }
         
-        double Dist;
+        double Dist = 0;
         double w;
         double wSum = 0;
         double zSum = 0;
@@ -128,6 +143,9 @@ public class DU2IDW {
                     Dist = (Math.sqrt((x0[k] - x[i])*(x0[k] - x[i]) + (y0[k] - y[a])*(y0[k] - y[a])));
                     if (Dist == 0){
                         z[(a*x.length)+i] = z0[k];
+                        wSum = 0;
+                        zSum = 0;
+                        break;
                     }
                     else{    
                     w = 1/(Dist*Dist);
@@ -135,18 +153,30 @@ public class DU2IDW {
                     zSum += z0[k]*w;
                     }
                 }
-                z[(a*x.length)+i] = zSum/wSum;
+                if (Dist != 0){
+                    z[(a*x.length)+i] = zSum/wSum;
+                    wSum = 0;
+                    zSum = 0;
+                }
             }
         }
         return z;
     }
     
     public static double min(double []pole){
-        Arrays.sort(pole);
-        return pole[0];
+        double min = pole[0];
+        for (int i = 0; i < pole.length; i++){
+            if (pole[i] < min)
+                min = pole[i];
+        }
+        return min;
     }
     public static double max(double []pole){
-        Arrays.sort(pole);
-        return pole [pole.length - 1];
+        double max = pole[0];
+        for (int i = 0; i < pole.length; i++){
+            if (pole[i] > max)
+                max = pole[i];
+        }
+        return max;
     }
 }
