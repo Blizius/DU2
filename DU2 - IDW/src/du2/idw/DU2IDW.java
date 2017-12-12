@@ -14,6 +14,7 @@ import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
 import static java.lang.Math.pow;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -74,12 +75,13 @@ public class DU2IDW {
         double[] z = IDW(xyz, p);
         PrintWriter writer;
         try {
+            Locale.setDefault(Locale.US);
             writer = new PrintWriter(args[args.length - 1]);
             for (int i = 0; i < z.length; i++) {
                 if ((i + 1) % 100 == 0) {
                     writer.format("%.2f\n", z[i]);
                 } else {
-                    writer.format("%.2f;", z[i]);
+                    writer.format("%.2f,", z[i]);
                 }
             }
             writer.close();
